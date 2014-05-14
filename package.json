@@ -1,8 +1,8 @@
 {
-  "name": "hubot-reviewer-lotto",
+  "name": "yukiho-reviewer-lotto",
   "version": "0.0.2",
   "author": "sakatam",
-  "description": "A reviewer lottery script for Hubot",
+  "description": "A reviewer lottery script for Yukiho",
   "keywords": [
     "hubot",
     "hubot-scripts"
@@ -11,7 +11,7 @@
   "main": "index.coffee",
   "repository": {
     "type": "git",
-    "url": "git://github.com/sakatam/hubot-reviewer-lotto.git"
+    "url": "git://github.com/white-chocolate/yukiho-reviewer-lotto.git"
   },
   "dependencies": {
     "coffee-script": "~1.7",
@@ -20,7 +20,7 @@
     "github": "~0.1.15"
   },
   "bugs": {
-    "url": "https://github.com/sakatam/hubot-reviewer-lotto/issues"
+    "url": "https://github.com/white-chocolate/yukiho-reviewer-lotto/issues"
   },
   "devDependencies": {
     "coffee-script": "~1.7.1"
