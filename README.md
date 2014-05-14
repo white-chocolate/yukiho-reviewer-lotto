@@ -1,6 +1,8 @@
 # yukiho-reviewer-lotto
 Yukiho assigns a random reviewer for pull request on behalf of you.
 
+This is a fork of [sakatam/hubot-reviewer-lotto](https://github.com/sakatam/hubot-reviewer-lotto).
+
 # preparation
 * create a reviewer team in your github organization
 
