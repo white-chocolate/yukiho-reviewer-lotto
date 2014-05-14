@@ -24,7 +24,7 @@ module.exports = (robot) ->
 
   if !ghToken? or !ghOrg? or !ghReviwerTeam?
     return robot.logger.error """
-      reviewer-lottery に使われる環境変数がないよ!
+      yukiho-reviewer-lotto に使われる環境変数がないよ!
       #{__filename}
       HUBOT_GITHUB_TOKEN: #{ghToken}
       HUBOT_GITHUB_ORG: #{ghOrg}
@@ -49,13 +49,13 @@ module.exports = (robot) ->
           id: ghReviwerTeam
           per_page: 100
         gh.orgs.getTeamMembers params, (err, res) ->
-          return cb "チームメンバーの取得でエラーが出ちゃったよ…: #{err.toString()}" if err?
+          return cb "チームメンバーの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
           cb null, {reviewers: res}
 
       (ctx, cb) ->
         # check if pull req exists
         gh.pullRequests.get prParams, (err, res) ->
-          return cb "プルリクエストの取得でエラーが出ちゃったよ…: #{err.toString()}" if err?
+          return cb "プルリクエストの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
           ctx['creator'] = res.user
           ctx['assignee'] = res.assignee
           cb null, ctx
@@ -73,7 +73,7 @@ module.exports = (robot) ->
       (ctx, cb) ->
         # post a comment
         {reviewer} = ctx
-        params = _.extend { body: "@#{reviewer.login} レビューお願いっ :stuck_out_tongue_closed_eyes:" }, prParams
+        params = _.extend { body: "@#{reviewer.login} レビューお願いっ！ :stuck_out_tongue_closed_eyes:" }, prParams
         gh.issues.createComment params, (err, res) -> cb err, ctx
 
       (ctx, cb) ->
@@ -91,4 +91,4 @@ module.exports = (robot) ->
 
     ], (err, res) ->
       if err?
-        msg.reply "エラーが発生したよ!\n#{err}"
+        msg.reply "エラーが発生したよ！\n#{err}"
