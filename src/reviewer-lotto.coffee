@@ -86,12 +86,12 @@ module.exports = (robot) ->
 
       (ctx, cb) ->
         {reviewer, issue} = ctx
-        msg.reply "#{reviewer.login} さんに #{issue.html_url} のレビューをお願いしたよっ♪"
+        msg.send "#{reviewer.login} さんに #{issue.html_url} のレビューをお願いしたよっ♪"
         cb null, ctx
 
     ], (err, res) ->
       if err?
-        msg.reply "エラーが発生したよ！\n#{err}"
+        msg.send "エラーが発生したよ！\n#{err}"
 
   robot.respond /reviewer for ([\w-\.]+) (\d+) ([\w-\.]+)$/i, (msg) ->
     repo     = msg.match[1]
@@ -147,9 +147,9 @@ module.exports = (robot) ->
 
       (ctx, cb) ->
         {reviewer, issue} = ctx
-        msg.reply "#{reviewer} さんに #{issue.html_url} のレビューをお願いしたよっ♪"
+        msg.send "#{reviewer} さんに #{issue.html_url} のレビューをお願いしたよっ♪"
         cb null, ctx
 
     ], (err, res) ->
       if err?
-        msg.reply "エラーが発生したよ！\n#{err}"
+        msg.send "エラーが発生したよ！\n#{err}"
