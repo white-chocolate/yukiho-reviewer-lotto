@@ -57,7 +57,7 @@ module.exports = (robot) ->
       (ctx, cb) ->
         # check if pull req exists
         gh.pullRequests.get prParams, (err, res) ->
-          return cb "プルリクエストの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
+          return cb "プルリクエストの取得に失敗しちゃったよ。。: #{err.toString()}" if err?
           ctx['creator'] = res.user
           ctx['assignee'] = res.assignee
           cb null, ctx
@@ -83,7 +83,7 @@ module.exports = (robot) ->
       (ctx, cb) ->
         # post a comment
         {reviewer} = ctx
-        params = _.extend { body: "@#{reviewer} レビューお願いっ！ :stuck_out_tongue_closed_eyes:" }, prParams
+        params = _.extend { body: "@#{reviewer} さん、レビューお願いっ！ :stuck_out_tongue_closed_eyes:" }, prParams
         gh.issues.createComment params, (err, res) -> cb err, ctx
 
       (ctx, cb) ->
