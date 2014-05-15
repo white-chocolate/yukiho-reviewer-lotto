@@ -9,9 +9,10 @@
 #
 # Commands:
 #   hubot reviewer for <repo> <pull> - assigns random reviewer for pull request
+#   hubot reviewer for <repo> <pull> <user> - assigns specified reviewer for pull request
 #
 # Author:
-#   sakatam
+#   sakatam, white-chocolate
 
 _         = require "underscore"
 async     = require "async"
