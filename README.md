@@ -1,5 +1,5 @@
 # yukiho-reviewer-lotto
-Yukiho assigns a random reviewer for pull request on behalf of you.
+Yukiho assigns a (random) reviewer for pull request on behalf of you.
 
 This is a fork of [sakatam/hubot-reviewer-lotto](https://github.com/sakatam/hubot-reviewer-lotto).
 
@@ -16,4 +16,6 @@ This is a fork of [sakatam/hubot-reviewer-lotto](https://github.com/sakatam/hubo
 
 # usage
 * `yukiho reviewer for <repo> <pull>`
-* e.g. `yukiho reviewer for our-webapp 345`
+    * e.g. `yukiho reviewer for our-webapp 345`
+* `yukiho reviewer for <repo> <pull> <user>`
+    * e.g. `yukiho reviewer for our-webapp 345 octocat`

@@ -92,3 +92,64 @@ module.exports = (robot) ->
     ], (err, res) ->
       if err?
         msg.reply "エラーが発生したよ！\n#{err}"
+
+  robot.respond /reviewer for ([\w-\.]+) (\d+) ([\w-\.]+)$/i, (msg) ->
+    repo     = msg.match[1]
+    pr       = msg.match[2]
+    reviewer = msg.match[3]
+    prParams =
+      user: ghOrg
+      repo: repo
+      number: pr
+
+    gh = new GitHubApi version: "3.0.0"
+    gh.authenticate {type: "oauth", token: ghToken}
+
+    async.waterfall [
+      (cb) ->
+        # get team members
+        params =
+          id: ghReviwerTeam
+          per_page: 100
+        gh.orgs.getTeamMembers params, (err, res) ->
+          return cb "チームメンバーの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
+          cb null, {reviewers: res}
+
+      (ctx, cb) ->
+        # check if pull req exists
+        gh.pullRequests.get prParams, (err, res) ->
+          return cb "プルリクエストの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
+          ctx['creator'] = res.user
+          ctx['assignee'] = res.assignee
+          cb null, ctx
+
+      (ctx, cb) ->
+        # check reviewer
+        {reviewers, creator, assignee} = ctx
+        if reviewer not in reviewers.map((r) -> r.login)
+          return cb "そのユーザー名の人はチームにはいないよっ: #{reviewers.map((r) -> r.login).toString()}"
+        ctx['reviewer'] = reviewer
+        cb null, ctx
+
+      (ctx, cb) ->
+        # post a comment
+        {reviewer} = ctx
+        params = _.extend { body: "@#{reviewer} レビューお願いっ！ :stuck_out_tongue_closed_eyes:" }, prParams
+        gh.issues.createComment params, (err, res) -> cb err, ctx
+
+      (ctx, cb) ->
+        # change assignee
+        {reviewer} = ctx
+        params = _.extend { assignee: reviewer }, prParams
+        gh.issues.edit params, (err, res) ->
+          ctx['issue'] = res
+          cb err, ctx
+
+      (ctx, cb) ->
+        {reviewer, issue} = ctx
+        msg.reply "#{reviewer} さんに #{issue.html_url} のレビューをお願いしたよっ♪"
+        cb null, ctx
+
+    ], (err, res) ->
+      if err?
+        msg.reply "エラーが発生したよ！\n#{err}"
