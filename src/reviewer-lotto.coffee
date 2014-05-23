@@ -10,6 +10,7 @@
 # Commands:
 #   hubot reviewer for <repo> <pull> - assigns random reviewer for pull request
 #   hubot reviewer for <repo> <pull> <user> - assigns specified reviewer for pull request
+#   hubot reviewer show stats - proves the lotto has no bias
 #
 # Author:
 #   sakatam, white-chocolate
@@ -23,6 +24,8 @@ module.exports = (robot) ->
   ghOrg         = process.env.HUBOT_GITHUB_ORG
   ghReviwerTeam = process.env.HUBOT_GITHUB_REVIEWER_TEAM
 
+  STATS_KEY     = 'reviewer-lotto-stats'
+
   if !ghToken? or !ghOrg? or !ghReviwerTeam?
     return robot.logger.error """
       yukiho-reviewer-lotto に使われる環境変数がないよ!
@@ -31,6 +34,12 @@ module.exports = (robot) ->
       HUBOT_GITHUB_ORG: #{ghOrg}
       HUBOT_GITHUB_REVIEWER_TEAM: #{ghReviwerTeam}
     """
+
+  robot.respond /reviewer show stats$/i, (msg) ->
+    stats = robot.brain.get STATS_KEY
+    msgs = ["login, num assigned"]
+    msgs.push "#{login}, #{count}" for login, count of stats
+    msg.reply msgs.join "\n"
 
   robot.respond /reviewer for ([\w-\.]+) (\d+) ?([\w-\.]+)?$/i, (msg) ->
     repo     = msg.match[1]
@@ -43,6 +52,15 @@ module.exports = (robot) ->
 
     gh = new GitHubApi version: "3.0.0"
     gh.authenticate {type: "oauth", token: ghToken}
+
+    # mock api if debug mode
+    if process.env.HUBOT_REVIEWER_LOTTO_DEBUG in ["1", "true"]
+      gh.issues.createComment = (params, cb) ->
+        console.log "GitHubApi - createComment is called", params
+        cb null
+      gh.issues.edit = (params, cb) ->
+        console.log "GitHubApi - edit is called", params
+        cb null
 
     async.waterfall [
       (cb) ->
@@ -58,6 +76,7 @@ module.exports = (robot) ->
         # check if pull req exists
         gh.pullRequests.get prParams, (err, res) ->
           return cb "プルリクエストの取得に失敗しちゃったよ。。: #{err.toString()}" if err?
+          ctx['issue'] = res
           ctx['creator'] = res.user
           ctx['assignee'] = res.assignee
           cb null, ctx
@@ -91,12 +110,18 @@ module.exports = (robot) ->
         {reviewer} = ctx
         params = _.extend { assignee: reviewer }, prParams
         gh.issues.edit params, (err, res) ->
-          ctx['issue'] = res
           cb err, ctx
 
       (ctx, cb) ->
         {reviewer, issue} = ctx
         msg.send "#{reviewer} さんに #{issue.html_url} のレビューをお願いしたよっ♪"
+
+        # update stats
+        stats = (robot.brain.get STATS_KEY) or {}
+        stats[reviewer.login] or= 0
+        stats[reviewer.login]++
+        robot.brain.set STATS_KEY, stats
+
         cb null, ctx
 
     ], (err, res) ->
