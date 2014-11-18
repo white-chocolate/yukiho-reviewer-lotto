@@ -19,3 +19,5 @@ This is a fork of [sakatam/hubot-reviewer-lotto](https://github.com/sakatam/hubo
     * e.g. `yukiho reviewer for our-webapp 345`
 * `yukiho reviewer for <repo> <pull> <user>`
     * e.g. `yukiho reviewer for our-webapp 345 octocat`
+* `yukiho reviewer for <repo> <pull> from <team>`
+    * e.g. `yukiho reviewer for our-webapp 345 from Owners`
