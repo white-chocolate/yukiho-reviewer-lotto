@@ -41,7 +41,7 @@ module.exports = (robot) ->
     msgs.push "#{login}, #{count}" for login, count of stats
     msg.reply msgs.join "\n"
 
-  robot.respond /reviewer for ([\w-\.]+) (\d+) in ([\w-\.]+)$/i, (msg) ->
+  robot.respond /reviewer for ([\w-\.]+) (\d+) in ([\w-\.]+)/i, (msg) ->
     repo = msg.match[1]
     pr = msg.match[2]
     teamName = msg.match[3]
@@ -61,7 +61,7 @@ module.exports = (robot) ->
         gh.orgs.getTeams params, (err, res) ->
           return cb "チームの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
           teamNames = res.map (t) -> t.name
-          team = res.find (t) ->
+          team = _.find res, (t) ->
             t.name == teamName
           if !team
             return cb "#{teamName} という名前のチームはないよ〜この中から選んでねっ♪: #{teamNames}"
