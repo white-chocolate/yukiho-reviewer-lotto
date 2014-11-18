@@ -41,6 +41,92 @@ module.exports = (robot) ->
     msgs.push "#{login}, #{count}" for login, count of stats
     msg.reply msgs.join "\n"
 
+  robot.respond /reviewer for ([\w-\.]+) (\d+) in ([\w-\.]+)$/i, (msg) ->
+    repo = msg.match[1]
+    pr = msg.match[2]
+    teamName = msg.match[3]
+    prParams =
+      user: ghOrg
+      repo: repo
+      number: pr
+
+    gh = new GitHubApi version: "3.0.0"
+    gh.authenticate { type: "oauth", token: ghToken }
+
+    async.waterfall [
+      (cb) ->
+        # get teams
+        params =
+          org: ghOrg
+        gh.orgs.getTeams params, (err, res) ->
+          return cb "チームの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
+          teamNames = res.map (t) -> t.name
+          team = res.find (t) ->
+            t.name == teamName
+          if !team
+            return cb "#{teamName} という名前のチームはないよ〜この中から選んでねっ♪: #{teamNames}"
+          cb null, { team: team }
+      (ctx, cb) ->
+        # get team members
+        params =
+          id: ctx['team'].id
+          per_page: 100
+        gh.orgs.getTeamMembers params, (err, res) ->
+          return cb "チームメンバーの取得に失敗しちゃったみたい。。: #{err.toString()}" if err?
+          ctx['reviewers'] = res.map (r) -> r.login
+          cb null, ctx
+
+      (ctx, cb) ->
+        # check if pull req exists
+        gh.pullRequests.get prParams, (err, res) ->
+          return cb "プルリクエストの取得に失敗しちゃったよ。。: #{err.toString()}" if err?
+          ctx['issue'] = res
+          ctx['creator'] = res.user
+          ctx['assignee'] = res.assignee
+          cb null, ctx
+
+      (ctx, cb) ->
+        # pick reviewer
+        {reviewers, creator, assignee} = ctx
+        reviewers = reviewers.filter (r) -> r != creator.login
+        # exclude current assignee from reviewer candidates
+        if assignee?
+          reviewers = reviewers.filter (r) -> r != assignee.login
+        if reviewers.length == 0
+          return cb "割り当てられる人がいないみたい。。"
+        ctx['reviewer'] = _.sample reviewers
+        cb null, ctx
+
+      (ctx, cb) ->
+        # post a comment
+        {reviewer} = ctx
+        params = _.extend { body: "@#{reviewer} さん、レビューお願いっ！ :stuck_out_tongue_closed_eyes:" }, prParams
+        gh.issues.createComment params, (err, res) -> cb err, ctx
+
+      (ctx, cb) ->
+        # change assignee
+        {reviewer} = ctx
+        params = _.extend { assignee: reviewer }, prParams
+        gh.issues.edit params, (err, res) ->
+          cb err, ctx
+
+      (ctx, cb) ->
+        {reviewer, issue} = ctx
+        msg.send "#{reviewer} さんに #{issue.html_url} のレビューをお願いしたよっ♪"
+
+        # update stats
+        stats = (robot.brain.get STATS_KEY) or {}
+        stats[reviewer.login] or= 0
+        stats[reviewer.login]++
+        robot.brain.set STATS_KEY, stats
+
+        cb null, ctx
+
+    ], (err, res) ->
+      if err?
+        msg.send "エラーが発生したよ！\n#{err}"
+
+
   robot.respond /reviewer for ([\w-\.]+) (\d+) ?([\w-\.]+)?$/i, (msg) ->
     repo     = msg.match[1]
     pr       = msg.match[2]
