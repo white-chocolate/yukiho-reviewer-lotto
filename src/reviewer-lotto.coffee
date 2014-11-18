@@ -41,7 +41,7 @@ module.exports = (robot) ->
     msgs.push "#{login}, #{count}" for login, count of stats
     msg.reply msgs.join "\n"
 
-  robot.respond /reviewer for ([\w-\.]+) (\d+) in ([\w-\.]+)/i, (msg) ->
+  robot.respond /reviewer for ([\w-\.]+) (\d+) from ([\w-\.]+)/i, (msg) ->
     repo = msg.match[1]
     pr = msg.match[2]
     teamName = msg.match[3]
